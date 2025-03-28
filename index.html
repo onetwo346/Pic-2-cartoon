@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pic to Cartoon</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.17.0/tf.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+        }
+        h1 {
+            color: #333;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        #output img {
+            margin-top: 10px;
+            width: 300px;
+            border-radius: 10px;
+        }
+        #downloadBtn {
+            display: none;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        #downloadBtn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pic to Cartoon</h1>
+        <p>Upload your picture and convert it into a cartoon!</p>
+        
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="convertToCartoon()">Convert</button>
+
+        <div id="output">
+            <canvas id="canvas"></canvas>
+            <a id="downloadBtn" download="cartoonized.png">Download Cartoon</a>
+        </div>
+    </div>
+
+    <script>
+        function convertToCartoon() {
+            const fileInput = document.getElementById('imageUpload');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            if (!fileInput.files[0]) {
+                alert("Please upload an image first!");
+                return;
+            }
+
+            const img = new Image();
+            img.src = URL.createObjectURL(fileInput.files[0]);
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                let imageData = ctx.getImageData(0, 0, img.width, img.height);
+                let data = imageData.data;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    let r = data[i], g = data[i + 1], b = data[i + 2];
+
+                    let avg = (r + g + b) / 3;
+                    data[i] = avg; 
+                    data[i + 1] = avg;
+                    data[i + 2] = avg;
+                }
+
+                ctx.putImageData(imageData, 0, 0);
+
+                downloadBtn.href = canvas.toDataURL("image/png");
+                downloadBtn.style.display = "inline-block";
+            };
+        }
+    </script>
+</body>
+</html>
